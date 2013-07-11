@@ -3339,9 +3339,14 @@ CONFIG_NLS_ISO8859_1=y
 # CONFIG_NLS_ISO8859_15 is not set
 # CONFIG_NLS_KOI8_R is not set
 # CONFIG_NLS_KOI8_U is not set
+<<<<<<< HEAD:arch/arm/configs/m7_defconfig
 
 # Tuxera exFAT need enable this configuration
 CONFIG_NLS_UTF8=y
+=======
+# CONFIG_NLS_UTF8 is not set
+CONFIG_RESTRICT_ROOTFS_SLAVE=y
+>>>>>>> 2cec1f5... Restrict slave mountspace so Dalvik apps can mount system-wide volumes:arch/arm/configs/apq8064_defconfig
 
 #
 # Kernel hacking
