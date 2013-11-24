@@ -248,12 +248,6 @@ static struct lcdc_platform_data dtv_pdata = {
 };
 #endif
 
-static int mdp_core_clk_rate_table[] = {
-	200000000,
-	200000000,
-	200000000,
-	200000000,
-};
 struct mdp_reg mdp_gamma[] = {
         {0x94800, 0x000000, 0x0},
         {0x94804, 0x010101, 0x0},
@@ -544,9 +538,6 @@ int monarudo_mdp_gamma(void)
 
 static struct msm_panel_common_pdata mdp_pdata = {
 	.gpio = MDP_VSYNC_GPIO,
-	.mdp_core_clk_rate = 200000000,
-	.mdp_core_clk_table = mdp_core_clk_rate_table,
-	.num_mdp_clk = ARRAY_SIZE(mdp_core_clk_rate_table),
 #ifdef CONFIG_MSM_BUS_SCALING
 	.mdp_bus_scale_table = &mdp_bus_scale_pdata,
 #endif
@@ -562,6 +553,29 @@ static struct msm_panel_common_pdata mdp_pdata = {
 	.mdp_max_clk = 200000000,
 };
 
+static char wfd_check_mdp_iommu_split_domain(void)
+{
+    return mdp_pdata.mdp_iommu_split_domain;
+}
+
+#ifdef CONFIG_FB_MSM_WRITEBACK_MSM_PANEL
+static struct msm_wfd_platform_data wfd_pdata = {
+    .wfd_check_mdp_iommu_split = wfd_check_mdp_iommu_split_domain,
+};
+
+static struct platform_device wfd_panel_device = {
+    .name = "wfd_panel",
+    .id = 0,
+    .dev.platform_data = NULL,
+};
+
+static struct platform_device wfd_device = {
+    .name          = "msm_wfd",
+    .id            = -1,
+    .dev.platform_data = &wfd_pdata,
+};
+#endif
+
 void __init monarudo_mdp_writeback(struct memtype_reserve* reserve_table)
 {
 	mdp_pdata.ov0_wb_size = MSM_FB_OVERLAY0_WRITEBACK_SIZE;
@@ -574,9 +588,12 @@ void __init monarudo_mdp_writeback(struct memtype_reserve* reserve_table)
 #endif
 }
 static int first_init = 1;
-static bool dsi_power_on;
+uint32_t cfg_panel_te_active[] = {GPIO_CFG(LCD_TE, 1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA)};
+uint32_t cfg_panel_te_sleep[] = {GPIO_CFG(LCD_TE, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)};
+
 static int mipi_dsi_panel_power(int on)
 {
+        static bool dsi_power_on = false;
 	static struct regulator *reg_lvs5, *reg_l2;
 	static int gpio36, gpio37;
 	int rc;
@@ -929,6 +946,8 @@ static void monarudo_display_on(struct msm_fb_data_type *mfd)
 	cmdreq.cmds = display_on_cmds;
 	cmdreq.cmds_cnt = 1;
 	cmdreq.flags = CMD_REQ_COMMIT;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		cmdreq.flags |= CMD_CLK_CTRL;
 	cmdreq.rlen = 0;
 	cmdreq.cb = NULL;
 
@@ -942,6 +961,8 @@ static void monarudo_display_off(struct msm_fb_data_type *mfd)
 	cmdreq.cmds = display_off_cmds;
 	cmdreq.cmds_cnt = display_off_cmds_count;
 	cmdreq.flags = CMD_REQ_COMMIT;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		cmdreq.flags |= CMD_CLK_CTRL;
 	cmdreq.rlen = 0;
 	cmdreq.cb = NULL;
 
@@ -984,9 +1005,6 @@ static void monarudo_set_backlight(struct msm_fb_data_type *mfd)
 {
 	int rc;
 
-	if (mdp4_overlay_dsi_state_get() <= ST_DSI_SUSPEND) {
-		return;
-	}
 	write_display_brightness[2] = monarudo_shrink_pwm((unsigned char)(mfd->bl_level));
 
 	if (resume_blk) {
@@ -1020,6 +1038,8 @@ static void monarudo_set_backlight(struct msm_fb_data_type *mfd)
 	cmdreq.cmds = (struct dsi_cmd_desc*)&renesas_cmd_backlight_cmds;
 	cmdreq.cmds_cnt = 1;
 	cmdreq.flags = CMD_REQ_COMMIT;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		cmdreq.flags |= CMD_CLK_CTRL;
 	cmdreq.rlen = 0;
 	cmdreq.cb = NULL;
 
@@ -1303,6 +1323,10 @@ void __init monarudo_init_fb(void)
 		wa_xo = msm_xo_get(MSM_XO_TCXO_D0, "mipi");
 	}
 	msm_fb_register_device("dtv", &dtv_pdata);
+#ifdef CONFIG_FB_MSM_WRITEBACK_MSM_PANEL
+  platform_device_register(&wfd_panel_device);
+  platform_device_register(&wfd_device);
+#endif
 }
 
 static int __init monarudo_panel_init(void)
