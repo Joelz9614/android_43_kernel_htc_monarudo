@@ -28,7 +28,6 @@
 #include "msm.h"
 #include "msm_ispif.h"
 
-#include "swfv/swfa_k.h"
 
 #ifdef CONFIG_MSM_CAMERA_DEBUG
 #define D(fmt, args...) pr_debug("msm_mctl_buf: " fmt, ##args)
@@ -448,14 +447,6 @@ int msm_mctl_buf_done_proc(
 
 	if (pmctl->htc_af_info.af_input.af_use_sw_sharpness && image_mode == MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW)
 	{
-	    rc = swfa_FeatureAnalysis((uint8_t* )mem->arm_vaddr,
-			                          pmctl->htc_af_info.af_input.preview_width,
-			                          pmctl->htc_af_info.af_input.preview_height,
-			                          pmctl->htc_af_info.af_input.roi_x,
-			                          pmctl->htc_af_info.af_input.roi_y,
-			                          pmctl->htc_af_info.af_input.roi_width,
-			                          pmctl->htc_af_info.af_input.roi_height,
-			                          1);
 	    if(!rc)
 	        pmctl->htc_af_info.af_input.af_use_sw_sharpness = false;
 	}

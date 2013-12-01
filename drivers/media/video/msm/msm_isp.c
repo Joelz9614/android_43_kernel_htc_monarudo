@@ -31,7 +31,6 @@
 
 #include "msm.h"
 
-#include "swfv/swfa_k.h"
 
 #ifdef CONFIG_MSM_CAMERA_DEBUG
 #define D(fmt, args...) pr_debug("msm_isp: " fmt, ##args)
@@ -548,10 +547,6 @@ static int msm_isp_notify_vfe(struct v4l2_subdev *sd,
 						&(stats.fd));
 
 			    memset((uint8_t *)(pphy+BAYER_FOCUS_BUF_SIZE), 0x00, SW_FOCUS_BUF_SIZE);
-
-			    rc = swfa_Transform2((uint8_t *)(pphy+BAYER_FOCUS_BUF_SIZE),
-			                          &newWidth,
-			                          &newHeight);
 
 			    if(!rc)
 				    stats.htc_af_info.af_input.af_use_sw_sharpness = false;

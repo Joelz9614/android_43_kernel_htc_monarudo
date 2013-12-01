@@ -28,8 +28,6 @@
 #include <media/v4l2-subdev.h>
 #include "msm_camera_i2c.h"
 #include "msm_camera_eeprom.h"
-#include "../yushanII/ilp0100_ST_definitions.h"
-#include <media/linux_yushanii.h>
 
 #define Q8  0x00000100
 #define Q10 0x00000400
@@ -197,16 +195,6 @@ struct msm_sensor_fn_t {
 	int (*sensor_write_output_settings_specific)(struct msm_sensor_ctrl_t *s_ctrl, uint16_t res); 
 	int (*sensor_i2c_read_otp)(struct sensor_cfg_data *cdata, struct msm_sensor_ctrl_t *s_ctrl);
 
-	void (*sensor_yushanii_status_line_modifier2)(uint8_t*);
-	void (*sensor_yushanii_status_line_modifier)(uint16_t*);
-	void (*sensor_yushanii_line_length_pclk_modifier)(uint16_t*);
-	void (*sensor_yushanii_status_line_outputed_modifier)(unsigned char*);
-    void (*sensor_yushanII_set_output_format)(struct msm_sensor_ctrl_t *sensor,int res, Ilp0100_structFrameFormat *output_format);
-	void (*sensor_yushanII_set_parm)(struct msm_sensor_ctrl_t *sensor, int res,Ilp0100_structSensorParams *YushanII_sensor);
-    void (*sensor_yushanII_set_IQ)(struct msm_sensor_ctrl_t *sensor,int*,int*,int*,struct yushanii_cls*);
-	void(*sensor_yushanII_active_hold)(void);
-	int (*sensor_yushanII_ae_updated)(void);
-	void(*sensor_yushanII_set_default_ae)(struct msm_sensor_ctrl_t *, uint8_t);
 	void (*sensor_read_command_line) (struct msm_sensor_ctrl_t *);	
 	void (*sensor_set_aec_weighting)(struct msm_sensor_ctrl_t *,struct sensor_cfg_data *cdata);
 };
